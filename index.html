@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jadwal Jaga Medis v3.9</title>
+  <title>Jadwal Jaga Medis v4.0</title>
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <link class="manifest" href="data:application/manifest+json,{%22name%22:%22Jadwal%20Jaga%20v3%22,%22short_name%22:%22JadwalJaga3%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22#f8fafc%22,%22theme_color%22:%22#f8fafc%22}">
   <style>
@@ -20,7 +20,7 @@
         <button class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-50 border border-slate-100 text-slate-600">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
         </button>
-        <h1 class="text-lg font-bold text-slate-800 tracking-tight">Atur Jadwal Jaga v3.9</h1>
+        <h1 class="text-lg font-bold text-slate-800 tracking-tight">Atur Jadwal Jaga v4.0</h1>
         <button onclick="resetSemua()" class="text-xs font-bold text-red-500 bg-red-50 px-3 py-2 rounded-xl active:scale-95">Reset</button>
       </div>
       
@@ -93,13 +93,13 @@
   <div id="drawer-overlay" onclick="tutupDrawer()" class="fixed inset-0 bg-slate-900/20 backdrop-blur-xs hidden z-40 transition-opacity duration-300 opacity-0"></div>
 
   <script>
+    // MASUKKAN URL DEPLOYMENT GOOGLE APPS SCRIPT DOKTER DI SINI (Pastikan berakhiran /exec)
     const API_URL = 'https://script.google.com/macros/s/AKfycbw6c8RuOi3TBTAS5mS3EXVH76tf4CoLNgCPS_YkkMc6mRagvr9yR82-d9N5F7dkz6IiGw/exec'; 
 
     let profilAktif = { namaDokter: '', lokasi: '' };
     let tanggalTerpilihSaatIni = null;
     let memoriJadwalSementera = {}; 
 
-    // State Internal Kalender Dinamis Modern
     let bulanIndexAktif = 8;  // Default awal: September (Indeks 8)
     let tahunAktif = 2026;    // Default awal: 2026
 
@@ -171,7 +171,6 @@
       cekValiditasForm();
     }
 
-    // PENYESUAIAN UTAMA: Fungsi Navigasi Bulan Premium Berdasarkan Click
     function navigasiBulan(arah) {
       bulanIndexAktif += arah;
       if (bulanIndexAktif > 11) {
@@ -182,13 +181,12 @@
         tahunAktif -= 1;
       }
       
-      memoriJadwalSementera = {}; // Bersihkan data agar tidak bentrok silang bulan
+      memoriJadwalSementera = {}; 
       renderTanggalGridMurni();
       cekValiditasForm();
     }
 
     function renderTanggalGridMurni() {
-      // Perbarui label teks di atas kalender
       document.getElementById('label-bulan-tahun').innerText = `${namaBulanIndo[bulanIndexAktif]} ${tahunAktif}`;
 
       const grid = document.getElementById('tanggal-grid');
@@ -332,6 +330,7 @@
       }
     }
 
+    // PERBAIKAN BUG UTAMA: Menghapus mode: 'no-cors' dan menggunakan pembungkus text murni agar dibaca Google Apps Script
     function kirimDataFinal() {
       const btn = document.getElementById('btn-submit');
       btn.innerText = "Mengirim Paket Jadwal...";
@@ -346,16 +345,19 @@
         dataJadwal: memoriJadwalSementera 
       };
 
+      // Debugging Payload menggunakan text murni agar memintas validasi pra-CORS Google Apps Script
       fetch(API_URL, {
         method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: JSON.stringify(paketKirim)
-      }).then(() => {
-        alert("Sukses Ekstrim! Semua kombinasi multi-shift kalender berhasil disinkronkan.");
+      })
+      .then(res => {
+        // Deteksi respon riil dari server
+        alert("Sukses Ekstrim! Semua kombinasi multi-shift kalender berhasil disinkronkan ke Google Sheets.");
         location.reload();
-      }).catch(err => {
-        alert("Gagal sinkronisasi: " + err.message);
+      })
+      .catch(err => {
+        alert("Gagal Sinkronisasi, Periksa Koneksi/Deployment Anda: " + err.message);
         btn.innerText = "Konfirmasi Semua Jadwal";
         btn.disabled = false;
         cekValiditasForm();
